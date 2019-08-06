@@ -2,7 +2,7 @@
 
 ## protoc
 
-code generation example:
+use example:
 
 ```makefile
 .PHONY: proto
@@ -23,4 +23,18 @@ proto:
 	Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 	:${$@_target} \
 	${$@_source}/*.proto
+```
+
+## linter
+
+use example:
+
+```makefile
+.PHONY: linter
+linter:
+	docker run -it --rm \
+	-v "$(shell pwd):/go/src/github.com/dialogs/dialog-go-lib" \
+	-w "/go/src/github.com/dialogs/dialog-go-lib" \
+	go-tools-linter:1.0.0 \
+	golangci-lint run ./... --exclude "is deprecated"
 ```

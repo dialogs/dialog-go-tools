@@ -3,16 +3,30 @@
 TAG            :=1.0.0
 NAME_PREFIX    :=go-tools
 DOCKER_REGISTRY?=
+IMAGE          ?=
 
 .PHONY: all
-all: docker-protoc-build
+all: docker-protoc-build docker-linter-build
 
 .PHONY: docker-protoc-build
 docker-protoc-build:
 	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-protoc:${TAG})
-	-docker rm -f `docker ps -a -q --filter=ancestor=${$@_image}`
-	-docker rmi -f `docker images -q ${$@_image}`
-	-docker rmi $(docker images -f "dangling=true" -q)
+	IMAGE=${$@_image} $(MAKE) clear
 
 	docker build -f ./Dockerfile-protoc --tag ${$@_image} .
 
+.PHONY: docker-linter-build
+docker-linter-build:
+	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-linter:${TAG})
+	IMAGE=${$@_image} $(MAKE) clear
+
+	docker build -f ./Dockerfile-linter --tag ${$@_image} .
+
+.PHONY: clear
+clear:
+ifneq (${IMAGE},)
+	@echo "clear image: " ${IMAGE}
+	-docker rm -f `docker ps -a -q --filter=ancestor=${IMAGE}`
+	-docker rmi -f `docker images -q ${IMAGE}`
+	-docker rmi $(docker images -f "dangling=true" -q)
+endif

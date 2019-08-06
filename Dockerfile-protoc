@@ -24,7 +24,8 @@ FROM golang:1.12-stretch
 
 COPY --from=protoc /usr/local/include/google /usr/local/include/google
 COPY --from=protoc /usr/local/bin/protoc /usr/local/bin/protoc
-COPY --from=protoc /usr/local/lib /usr/local/lib
+COPY --from=protoc /usr/local/lib/libproto* /usr/local/lib/
+COPY --from=protoc /usr/local/lib/pkgconfig /usr/local/lib/pkgconfig
 
 RUN ldconfig # refresh shared library cache.
 
