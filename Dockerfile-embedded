@@ -1,0 +1,9 @@
+FROM golang:1.12-stretch as embedded-builder
+
+RUN go get -u -v github.com/mjibson/esc
+
+FROM golang:1.12-stretch
+
+COPY --from=embedded-builder go/bin/esc /usr/local/bin/esc
+
+CMD exit 1

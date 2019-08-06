@@ -6,7 +6,9 @@ DOCKER_REGISTRY?=
 IMAGE          ?=
 
 .PHONY: all
-all: docker-protoc-build docker-linter-build
+all: docker-protoc-build \
+	 docker-linter-build \
+	 docker-embedded-build
 
 .PHONY: docker-protoc-build
 docker-protoc-build:
@@ -21,6 +23,13 @@ docker-linter-build:
 	IMAGE=${$@_image} $(MAKE) clear
 
 	docker build -f ./Dockerfile-linter --tag ${$@_image} .
+
+.PHONY: docker-embedded-build
+docker-embedded-build:
+	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-embedded:${TAG})
+	IMAGE=${$@_image} $(MAKE) clear
+
+	docker build -f ./Dockerfile-embedded --tag ${$@_image} .
 
 .PHONY: clear
 clear:

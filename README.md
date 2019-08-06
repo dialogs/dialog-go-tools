@@ -38,3 +38,20 @@ linter:
 	go-tools-linter:1.0.0 \
 	golangci-lint run ./... --exclude "is deprecated"
 ```
+
+## embedded
+
+use example:
+
+```makefile
+.PHONY: embedded
+embedded:
+	$(eval $@_target := github.com/dialogs/dialog-go-lib/db/migrations/test)
+	rm -f $($@_target)/static.go
+
+	docker run -it --rm \
+	-v "$(shell pwd):/go/src/github.com/dialogs/dialog-go-lib" \
+	-w "/go/src/github.com/dialogs/dialog-go-lib" \
+	go-tools-embedded:1.0.0 \
+	go generate $($@_target)
+```
