@@ -55,3 +55,21 @@ embedded:
 	go-tools-embedded:1.0.0 \
 	go generate $($@_target)
 ```
+
+## mock
+
+use example:
+
+```makefile
+.PHONY: mock
+mock:
+	$(eval $@_source := kafka)
+	$(eval $@_target := ${$@_source}/mocks)
+
+	docker run -it --rm \
+	-v "$(shell pwd):/go/src/github.com/dialogs/dialog-go-lib" \
+	-w "/go/src/github.com/dialogs/dialog-go-lib" \
+	go-tools-mock:1.0.0 \
+	mockery -name=IReader -dir=${$@_source} -recursive=false -output=$($@_target) && \
+	mockery -name=IWriter -dir=${$@_source} -recursive=false -output=$($@_target)
+```

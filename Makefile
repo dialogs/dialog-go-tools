@@ -8,7 +8,8 @@ IMAGE          ?=
 .PHONY: all
 all: docker-protoc-build \
 	 docker-linter-build \
-	 docker-embedded-build
+	 docker-embedded-build \
+	 docker-mock-build
 
 .PHONY: docker-protoc-build
 docker-protoc-build:
@@ -30,6 +31,13 @@ docker-embedded-build:
 	IMAGE=${$@_image} $(MAKE) clear
 
 	docker build -f ./Dockerfile-embedded --tag ${$@_image} .
+
+.PHONY: docker-mock-build
+docker-mock-build:
+	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-mock:${TAG})
+	IMAGE=${$@_image} $(MAKE) clear
+
+	docker build -f ./Dockerfile-mock --tag ${$@_image} .
 
 .PHONY: clear
 clear:

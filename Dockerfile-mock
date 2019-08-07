@@ -1,0 +1,9 @@
+FROM golang:1.12-stretch as mockery-builder
+
+RUN go get -u -v github.com/vektra/mockery/.../
+
+FROM golang:1.12-stretch
+
+COPY --from=mockery-builder go/bin/mockery /usr/local/bin/mockery
+
+CMD exit 1
