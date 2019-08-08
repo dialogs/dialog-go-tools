@@ -9,7 +9,8 @@ IMAGE          ?=
 all: docker-protoc-build \
 	 docker-linter-build \
 	 docker-embedded-build \
-	 docker-mock-build
+	 docker-mock-build \
+	 docker-easyjson-build
 
 .PHONY: docker-protoc-build
 docker-protoc-build:
@@ -38,6 +39,13 @@ docker-mock-build:
 	IMAGE=${$@_image} $(MAKE) clear
 
 	docker build -f ./Dockerfile-mock --tag ${$@_image} .
+
+.PHONY: docker-easyjson-build
+docker-easyjson-build:
+	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-easyjson:${TAG})
+	IMAGE=${$@_image} $(MAKE) clear
+
+	docker build -f ./Dockerfile-easyjson --tag ${$@_image} .
 
 .PHONY: clear
 clear:

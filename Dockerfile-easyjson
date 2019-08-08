@@ -1,0 +1,5 @@
+FROM golang:1.12-stretch
+
+RUN go get -u github.com/mailru/easyjson/...
+
+CMD exit 1

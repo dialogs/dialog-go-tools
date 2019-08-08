@@ -73,3 +73,20 @@ mock:
 	mockery -name=IReader -dir=${$@_source} -recursive=false -output=$($@_target) && \
 	mockery -name=IWriter -dir=${$@_source} -recursive=false -output=$($@_target)
 ```
+
+
+## easyjson
+
+use example:
+
+```makefile
+.PHONY: easyjson
+easyjson:
+	$(eval $@_target := pkg)
+
+	docker run -it --rm \
+	-v "$(shell pwd):/go/src/github.com/dialogs/dialog-go-lib" \
+	-w "/go/src/github.com/dialogs/dialog-go-lib" \
+	go-tools-easyjson:1.0.0 \
+	easyjson -all ${$@_target}/request.go
+```
