@@ -31,10 +31,8 @@ RUN ldconfig # refresh shared library cache.
 
 # source:
 # https://github.com/gogo/protobuf#more-speed-and-more-generated-code
-RUN go get github.com/gogo/protobuf/proto
-RUN go get github.com/gogo/protobuf/protoc-gen-gogoslick
-RUN go get github.com/gogo/protobuf/protoc-gen-gogofaster
-RUN go get github.com/gogo/protobuf/protoc-gen-gogofast
-RUN go get github.com/gogo/protobuf/gogoproto
+ENV PROJECT=github.com/gogo/protobuf
+RUN git clone -b v1.2.1 https://${PROJECT} ${GOPATH}/src/${PROJECT}
+RUN cd ${GOPATH}/src/${PROJECT} && make install
 
 CMD exit 1
