@@ -1,5 +1,9 @@
 # Golang tools
 
+```makefile
+PROJECT:= $(subst ${GOPATH}/src/,,$(shell pwd))
+```
+
 ## protoc
 
 use example:
@@ -13,9 +17,9 @@ proto:
 	rm -f ${$@_target}/*.pb.go
 
 	docker run -it --rm \
-	-v "$(shell pwd):/go/src/github.com/dialogs/dialog-go-lib" \
-	-w "/go/src/github.com/dialogs/dialog-go-lib" \
-	go-tools-protoc:1.0.0 \
+	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-w "/go/src/${PROJECT}" \
+	go-tools-protoc:latest \
 	protoc \
 	-I=${$@_source} \
 	-I=vendor \
@@ -33,9 +37,9 @@ use example:
 .PHONY: linter
 linter:
 	docker run -it --rm \
-	-v "$(shell pwd):/go/src/github.com/dialogs/dialog-go-lib" \
-	-w "/go/src/github.com/dialogs/dialog-go-lib" \
-	go-tools-linter:1.0.0 \
+	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-w "/go/src/${PROJECT}" \
+	go-tools-linter:latest \
 	golangci-lint run ./... --exclude "is deprecated"
 ```
 
@@ -46,14 +50,15 @@ use example:
 ```makefile
 .PHONY: embedded
 embedded:
-	$(eval $@_target := github.com/dialogs/dialog-go-lib/db/migrations/test)
-	rm -f $($@_target)/static.go
+	$(eval $@_target := ${PROJECT}/db/migrations/test)
 
 	docker run -it --rm \
-	-v "$(shell pwd):/go/src/github.com/dialogs/dialog-go-lib" \
-	-w "/go/src/github.com/dialogs/dialog-go-lib" \
-	go-tools-embedded:1.0.0 \
-	go generate $($@_target)
+	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-w "/go/src/${PROJECT}" \
+	go-tools-embedded:latest \
+	sh -c '\
+	rm -fv $($@_target)/static.go && \
+	go generate $($@_target)'
 ```
 
 ## mock
@@ -67,11 +72,12 @@ mock:
 	$(eval $@_target := ${$@_source}/mocks)
 
 	docker run -it --rm \
-	-v "$(shell pwd):/go/src/github.com/dialogs/dialog-go-lib" \
-	-w "/go/src/github.com/dialogs/dialog-go-lib" \
-	go-tools-mock:1.0.0 \
+	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-w "/go/src/${PROJECT}" \
+	go-tools-mock:latest \
+	sh -c '\
 	mockery -name=IReader -dir=${$@_source} -recursive=false -output=$($@_target) && \
-	mockery -name=IWriter -dir=${$@_source} -recursive=false -output=$($@_target)
+	mockery -name=IWriter -dir=${$@_source} -recursive=false -output=$($@_target)'
 ```
 
 
@@ -85,8 +91,10 @@ easyjson:
 	$(eval $@_target := pkg)
 
 	docker run -it --rm \
-	-v "$(shell pwd):/go/src/github.com/dialogs/dialog-go-lib" \
-	-w "/go/src/github.com/dialogs/dialog-go-lib" \
-	go-tools-easyjson:1.0.0 \
-	easyjson -all ${$@_target}/request.go
+	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-w "/go/src/${PROJECT}" \
+	go-tools-easyjson:latest \
+	sh -c '\
+	rm -fv ${$@_target}/*_easyjson.go && \
+	easyjson -all ${$@_target}/request.go'
 ```

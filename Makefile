@@ -1,6 +1,6 @@
 .DEFAULT_GOAL=all
 
-TAG            :=1.0.0
+TAG            :=latest
 NAME_PREFIX    :=go-tools
 DOCKER_REGISTRY?=
 IMAGE          ?=
