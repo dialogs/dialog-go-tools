@@ -1,9 +1,15 @@
 FROM golang:1.12-stretch as embedded-builder
 
+ENV GOBIN=/go/bin
+
 RUN go get -u -v github.com/mjibson/esc
+RUN go get -u -v github.com/go-bindata/go-bindata/... && \
+    cd ${GOPATH}/src/github.com/go-bindata/go-bindata && \
+    make
 
 FROM golang:1.12-stretch
 
 COPY --from=embedded-builder go/bin/esc /usr/local/bin/esc
+COPY --from=embedded-builder go/bin/go-bindata /usr/local/bin/go-bindata
 
 CMD exit 1
