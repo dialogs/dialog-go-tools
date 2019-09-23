@@ -98,3 +98,21 @@ easyjson:
 	rm -fv ${$@_target}/*_easyjson.go && \
 	easyjson -all ${$@_target}/request.go'
 ```
+
+## avro
+
+use example:
+
+```makefile
+.PHONY: avro
+avro:
+	$(eval $@_target := pkg/schemas)
+
+	docker run -it --rm \
+	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-w "/go/src/${PROJECT}" \
+	go-tools-avro:latest \
+	sh -c '\
+	rm -fv ${$@_target}/*.go && \
+	gogen-avro --package=schemas ${$@_target} ${$@_target}/*.avsc'
+```
