@@ -10,7 +10,8 @@ all: docker-protoc-build \
 	 docker-linter-build \
 	 docker-embedded-build \
 	 docker-mock-build \
-	 docker-easyjson-build
+	 docker-easyjson-build \
+	 docker-avro-build
 
 .PHONY: docker-protoc-build
 docker-protoc-build:
@@ -46,6 +47,13 @@ docker-easyjson-build:
 	IMAGE=${$@_image} $(MAKE) clear
 
 	docker build -f ./Dockerfile-easyjson --tag ${$@_image} .
+
+.PHONY: docker-avro-build
+docker-avro-build:
+	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-avro:${TAG})
+	IMAGE=${$@_image} $(MAKE) clear
+
+	docker build -f ./Dockerfile-avro --tag ${$@_image} .
 
 .PHONY: clear
 clear:
