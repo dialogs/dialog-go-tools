@@ -1,11 +1,13 @@
-FROM golang:1.12-stretch as avro-builder
+FROM golang:1.13-stretch as avro-builder
 
 ENV GOBIN=/go/bin
 
 RUN go get -d github.com/actgardner/gogen-avro/gogen-avro && \
     go install github.com/actgardner/gogen-avro/gogen-avro
 
-FROM golang:1.12-stretch
+FROM golang:1.13-stretch
+
+ENV GOFLAGS=-mod=vendor
 
 COPY --from=avro-builder go/bin/gogen-avro /usr/local/bin/gogen-avro
 
