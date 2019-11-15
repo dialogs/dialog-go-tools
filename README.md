@@ -9,7 +9,7 @@ docker login -u <login>
 DOCKER_REGISTRY=<login>/ DOCKER_PUSH=true make
 ```
 
-## How to use this image in Makefile
+## How to use docker images in Makefile
 
 Required variables:
 
