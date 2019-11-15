@@ -5,8 +5,6 @@ RUN go get gopkg.in/yaml.v2 && \
 
 FROM golang:1.13-stretch
 
-ENV GOFLAGS=-mod=vendor
-
 COPY --from=mockery-builder go/bin/mockery /usr/local/bin/mockery
 
 CMD exit 1

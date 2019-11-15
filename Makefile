@@ -1,65 +1,39 @@
-.DEFAULT_GOAL=all
+.DEFAULT_GOAL=build-all
 
-TAG            :=latest
-NAME_PREFIX    :=go-tools
 DOCKER_REGISTRY?=
-IMAGE          ?=
+DOCKER_PUSH    ?=
 
-.PHONY: all
-all: docker-protoc-build \
-	 docker-linter-build \
-	 docker-embedded-build \
-	 docker-mock-build \
-	 docker-easyjson-build \
-	 docker-avro-build
+TAG_LIST    := 1.0.0 latest
+IMG_LIST    := protoc linter embedded mock easyjson avro
+NAME_PREFIX := go-tools
 
-.PHONY: docker-protoc-build
-docker-protoc-build:
-	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-protoc:${TAG})
-	IMAGE=${$@_image} $(MAKE) clear
+# Do not set. Used for target
+NAME  ?=
+IMAGE ?=
+TAG   ?=
 
-	docker build -f ./Dockerfile-protoc --tag ${$@_image} .
+.PHONY: build-all
+build-all:
+	$(foreach tag,$(TAG_LIST), \
+	TAG=${tag} \
+	$(MAKE) -j 1 build-tag;)
 
-.PHONY: docker-linter-build
-docker-linter-build:
-	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-linter:${TAG})
-	IMAGE=${$@_image} $(MAKE) clear
+.PHONY: build-tag
+build-tag:
+	$(foreach name,$(IMG_LIST), \
+	NAME=${name} \
+	IMAGE=${DOCKER_REGISTRY}${NAME_PREFIX}-${name}:${TAG} \
+	$(MAKE) -j 1 build-image;)
 
-	docker build -f ./Dockerfile-linter --tag ${$@_image} .
-
-.PHONY: docker-embedded-build
-docker-embedded-build:
-	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-embedded:${TAG})
-	IMAGE=${$@_image} $(MAKE) clear
-
-	docker build -f ./Dockerfile-embedded --tag ${$@_image} .
-
-.PHONY: docker-mock-build
-docker-mock-build:
-	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-mock:${TAG})
-	IMAGE=${$@_image} $(MAKE) clear
-
-	docker build -f ./Dockerfile-mock --tag ${$@_image} .
-
-.PHONY: docker-easyjson-build
-docker-easyjson-build:
-	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-easyjson:${TAG})
-	IMAGE=${$@_image} $(MAKE) clear
-
-	docker build -f ./Dockerfile-easyjson --tag ${$@_image} .
-
-.PHONY: docker-avro-build
-docker-avro-build:
-	$(eval $@_image := ${DOCKER_REGISTRY}${NAME_PREFIX}-avro:${TAG})
-	IMAGE=${$@_image} $(MAKE) clear
-
-	docker build -f ./Dockerfile-avro --tag ${$@_image} .
-
-.PHONY: clear
-clear:
-ifneq (${IMAGE},)
+.PHONY: build-image
+build-image:
 	@echo "clear image: " ${IMAGE}
-	-docker rm -f `docker ps -a -q --filter=ancestor=${IMAGE}`
-	-docker rmi -f `docker images -q ${IMAGE}`
+	-docker rm -f $(docker ps -a -q --filter=ancestor=${IMAGE})
+	-docker rmi -f $(docker images -q ${IMAGE})
 	-docker rmi $(docker images -f "dangling=true" -q)
+
+	docker build -f ./Dockerfile-${NAME} --tag ${IMAGE} .
+
+ifneq (${DOCKER_PUSH},)
+	docker push ${IMAGE}
 endif

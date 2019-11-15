@@ -9,8 +9,6 @@ RUN go get -u -v github.com/go-bindata/go-bindata/... && \
 
 FROM golang:1.13-stretch
 
-ENV GOFLAGS=-mod=vendor
-
 COPY --from=embedded-builder go/bin/esc /usr/local/bin/esc
 COPY --from=embedded-builder go/bin/go-bindata /usr/local/bin/go-bindata
 

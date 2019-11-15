@@ -1,5 +1,16 @@
+FROM golang:1.13-stretch as easyjson-builder
+
+ARG GOBIN=/go/bin
+ARG REPO=github.com/mailru/easyjson
+ARG DIR=${GOPATH}/src/${REPO}
+
+RUN apt-get update -y && \
+    mkdir -p ${DIR} && \
+    git clone -b v0.7.0 https://${REPO} ${DIR} && \
+    go install ${REPO}/easyjson
+
 FROM golang:1.13-stretch
 
-RUN go get -u github.com/mailru/easyjson/...
+COPY --from=easyjson-builder go/bin/easyjson /usr/local/bin/easyjson
 
 CMD exit 1
