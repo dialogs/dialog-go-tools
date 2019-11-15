@@ -1,12 +1,25 @@
 # Golang tools
 
-```makefile
-PROJECT:= $(subst ${GOPATH}/src/,,$(shell pwd))
+## hub.docker.com
+
+Push to https://hub.docker.com/
+
+```bash
+docker login -u <login>
+DOCKER_REGISTRY=<login>/ DOCKER_PUSH=true make
 ```
 
-## protoc
+## How to use this image in Makefile
 
-use example:
+Required variables:
+
+```makefile
+PROJECT:=$(subst ${GOPATH}/src/,,$(shell pwd))
+```
+
+Use examples:
+
+## protoc
 
 ```makefile
 .PHONY: proto
@@ -18,8 +31,11 @@ proto:
 
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-v "${GOPATH}/pkg:/go/pkg" \
+	-e "GOPRIVATE=" \
+	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
-	go-tools-protoc:latest \
+	dialogs/go-tools-protoc:latest \
 	protoc \
 	-I=${$@_source} \
 	-I=vendor \
@@ -31,21 +47,20 @@ proto:
 
 ## linter
 
-use example:
-
 ```makefile
 .PHONY: linter
 linter:
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-v "${GOPATH}/pkg:/go/pkg" \
+	-e "GOPRIVATE=" \
+	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
-	go-tools-linter:latest \
+	dialogs/go-tools-linter:latest \
 	golangci-lint run ./... --exclude "is deprecated"
 ```
 
 ## embedded
-
-use example:
 
 ```makefile
 .PHONY: embedded
@@ -54,16 +69,17 @@ embedded:
 
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-v "${GOPATH}/pkg:/go/pkg" \
+	-e "GOPRIVATE=" \
+	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
-	go-tools-embedded:latest \
+	dialogs/go-tools-embedded:latest \
 	sh -c '\
 	rm -fv $($@_target)/static.go && \
 	go generate $($@_target)'
 ```
 
 ## mock
-
-use example:
 
 ```makefile
 .PHONY: mock
@@ -73,8 +89,11 @@ mock:
 
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-v "${GOPATH}/pkg:/go/pkg" \
+	-e "GOPRIVATE=" \
+	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
-	go-tools-mock:latest \
+	dialogs/go-tools-mock:latest \
 	sh -c '\
 	mockery -name=IReader -dir=${$@_source} -recursive=false -output=$($@_target) && \
 	mockery -name=IWriter -dir=${$@_source} -recursive=false -output=$($@_target)'
@@ -83,8 +102,6 @@ mock:
 
 ## easyjson
 
-use example:
-
 ```makefile
 .PHONY: easyjson
 easyjson:
@@ -92,16 +109,17 @@ easyjson:
 
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-v "${GOPATH}/pkg:/go/pkg" \
+	-e "GOPRIVATE=" \
+	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
-	go-tools-easyjson:latest \
+	dialogs/go-tools-easyjson:latest \
 	sh -c '\
 	rm -fv ${$@_target}/*_easyjson.go && \
 	easyjson -all ${$@_target}/request.go'
 ```
 
 ## avro
-
-use example:
 
 ```makefile
 .PHONY: avro
@@ -110,8 +128,11 @@ avro:
 
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-v "${GOPATH}/pkg:/go/pkg" \
+	-e "GOPRIVATE=" \
+	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
-	go-tools-avro:latest \
+	dialogs/go-tools-avro:latest \
 	sh -c '\
 	rm -fv ${$@_target}/*.go && \
 	gogen-avro --package=schemas ${$@_target} ${$@_target}/*.avsc'
