@@ -8,7 +8,7 @@ RUN apt-get update -y
 # https://github.com/protocolbuffers/protobuf/tree/master/src
 RUN apt-get install -y autoconf automake libtool curl make g++ unzip git
 
-RUN git clone -b v3.10.1 https://github.com/protocolbuffers/protobuf.git $DIR
+RUN git clone -b v3.11.2 https://github.com/protocolbuffers/protobuf.git $DIR
 
 WORKDIR $DIR
 
@@ -25,8 +25,8 @@ FROM golang:1.13-stretch
 COPY --from=protoc /usr/local/include/google /usr/local/include/google
 COPY --from=protoc /usr/local/bin/protoc /usr/local/bin/protoc
 COPY --from=protoc /usr/local/lib/pkgconfig /usr/local/lib/pkgconfig
-COPY --from=protoc /usr/local/lib/libprotobuf.so.21 /usr/local/lib/
-COPY --from=protoc /usr/local/lib/libprotoc.so.21 /usr/local/lib/
+COPY --from=protoc /usr/local/lib/libprotobuf.so.* /usr/local/lib/
+COPY --from=protoc /usr/local/lib/libprotoc.so.* /usr/local/lib/
 
 # source:
 # https://github.com/gogo/protobuf#more-speed-and-more-generated-code
