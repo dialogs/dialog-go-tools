@@ -5,26 +5,19 @@ RUN apt-get install -y git make g++ zlib1g-dev libssl-dev libsasl2-dev libzstd-d
 
 WORKDIR /librdkafka
 
-RUN git clone -b v1.3.0 https://github.com/edenhill/librdkafka .
+RUN git clone -b v1.4.0 https://github.com/edenhill/librdkafka .
 
 RUN ./configure
 RUN make
 RUN make install
 
-FROM golang:1.13-stretch as linter-builder
+FROM golang:1.14-stretch as linter-builder
 
 RUN GOPATH=$(mktemp -d) cd $(mktemp -d); \
     go mod init tempmod; \
-    echo 'replace github.com/go-critic/go-critic => github.com/go-critic/go-critic c3db6069acc5' >> go.mod && \
-    echo 'replace github.com/golangci/errcheck => github.com/golangci/errcheck ef45e06d44b6' >> go.mod && \
-    echo 'replace github.com/golangci/go-tools => github.com/golangci/go-tools af6baa5dc196' >> go.mod && \
-    echo 'replace github.com/golangci/gofmt => github.com/golangci/gofmt 0b8337e80d98' >> go.mod && \
-    echo 'replace github.com/golangci/gosec => github.com/golangci/gosec 66fb7fc33547' >> go.mod && \
-    echo 'replace github.com/golangci/lint-1 => github.com/golangci/lint-1 297bf364a8e0' >> go.mod && \
-    echo 'replace mvdan.cc/unparam => mvdan.cc/unparam fbb59629db34' >> go.mod && \
-    go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.21.0
+    go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.26.0
 
-FROM golang:1.13-stretch
+FROM golang:1.14-stretch
 
 COPY --from=linter-builder go/bin/golangci-lint /usr/local/bin/golangci-lint
 

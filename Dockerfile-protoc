@@ -8,7 +8,7 @@ RUN apt-get update -y
 # https://github.com/protocolbuffers/protobuf/tree/master/src
 RUN apt-get install -y autoconf automake libtool curl make g++ unzip git
 
-RUN git clone -b v3.11.2 https://github.com/protocolbuffers/protobuf.git $DIR
+RUN git clone -b v3.11.4 https://github.com/protocolbuffers/protobuf.git $DIR
 
 WORKDIR $DIR
 
@@ -20,7 +20,7 @@ RUN make
 RUN make check
 RUN make install
 
-FROM golang:1.13-stretch
+FROM golang:1.14-stretch
 
 COPY --from=protoc /usr/local/include/google /usr/local/include/google
 COPY --from=protoc /usr/local/bin/protoc /usr/local/bin/protoc
@@ -30,11 +30,18 @@ COPY --from=protoc /usr/local/lib/libprotoc.so.* /usr/local/lib/
 
 # source:
 # https://github.com/gogo/protobuf#more-speed-and-more-generated-code
-ARG PROJECT=github.com/gogo/protobuf
+ARG PROJECT_PROTOGOGO=github.com/gogo/protobuf
+ARG PROJECT_TWIRP=github.com/twitchtv/twirp
+ARG PROJECT_PROTOGO=github.com/golang/protobuf
 
 # refresh shared library cache.
 RUN ldconfig && \
-    git clone -b v1.3.1 https://${PROJECT} ${GOPATH}/src/${PROJECT} && \
-    (cd ${GOPATH}/src/${PROJECT}; make install)
+    git clone -b v1.3.1 https://${PROJECT_PROTOGOGO} ${GOPATH}/src/${PROJECT_PROTOGOGO} && \
+    (cd ${GOPATH}/src/${PROJECT_PROTOGOGO}; make install) && \
+    git clone -b v1.4.1 https://${PROJECT_PROTOGO} ${GOPATH}/src/${PROJECT_PROTOGO} && \
+    (cd ${GOPATH}/src/${PROJECT_PROTOGO}/protoc-gen-go; go install -v) && \
+    git clone -b v5.10.1 https://${PROJECT_TWIRP} ${GOPATH}/src/${PROJECT_TWIRP} && \
+    (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp; go install -v) && \
+    (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp_python; go install -v)
 
 CMD exit 1

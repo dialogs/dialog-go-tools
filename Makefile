@@ -3,7 +3,7 @@
 DOCKER_REGISTRY?=
 DOCKER_PUSH    ?=
 
-TAG_LIST    := 1.0.1 latest
+TAG_LIST    := 1.0.2 latest
 IMG_LIST    := protoc linter embedded mock easyjson avro
 NAME_PREFIX := go-tools
 
