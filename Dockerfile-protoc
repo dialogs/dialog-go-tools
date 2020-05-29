@@ -22,6 +22,7 @@ RUN make install
 
 FROM golang:1.14-stretch as tools
 
+ARG PROJECT_TWIRPY=github.com/khevse/twirpy
 ARG PROJECT_TWIRP=github.com/twitchtv/twirp
 ARG PROJECT_PROTOGO=github.com/golang/protobuf
 ARG PROJECT_GRPCECO=github.com/grpc-ecosystem/grpc-gateway
@@ -30,12 +31,20 @@ ENV GOBIN=/go/bin
 
 RUN git clone -b v1.4.1 https://${PROJECT_PROTOGO} ${GOPATH}/src/${PROJECT_PROTOGO} && \
         (cd ${GOPATH}/src/${PROJECT_PROTOGO}/protoc-gen-go; go install -v) && \
-    git clone -b v5.10.1 https://${PROJECT_TWIRP} ${GOPATH}/src/${PROJECT_TWIRP} && \
-        (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp; go install -v) && \
-        (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp_python; go install -v) && \
     git clone -b v1.14.4 https://${PROJECT_GRPCECO} ${GOPATH}/src/${PROJECT_GRPCECO} && \
         (cd ${GOPATH}/src/${PROJECT_GRPCECO}/protoc-gen-grpc-gateway; go install -v) && \
         (cd ${GOPATH}/src/${PROJECT_GRPCECO}/protoc-gen-swagger; go install -v)
+
+# in official twirp tools for python:
+# - client don't support custom headers: https://github.com/twitchtv/twirp/issues/185
+# - don't have server generation: https://github.com/twitchtv/twirp/issues/220
+RUN git clone -b v5.11.0 https://${PROJECT_TWIRP} ${GOPATH}/src/${PROJECT_TWIRP} && \
+        (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp; go install -v) && \
+        (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp_python; go install -v)
+
+# custom twirp tools for python
+RUN git clone -b master https://${PROJECT_TWIRPY} ${GOPATH}/src/${PROJECT_TWIRPY} && \
+        (cd ${GOPATH}/src/${PROJECT_TWIRPY}/protoc-gen-twirpy; go install -v)
 
 FROM golang:1.14-stretch
 
@@ -46,6 +55,7 @@ COPY --from=protoc /usr/local/lib/libprotobuf.so.* /usr/local/lib/
 COPY --from=protoc /usr/local/lib/libprotoc.so.* /usr/local/lib/
 COPY --from=tools /go/bin/protoc-gen-twirp /usr/local/bin/
 COPY --from=tools /go/bin/protoc-gen-twirp_python /usr/local/bin/
+COPY --from=tools /go/bin/protoc-gen-twirpy /usr/local/bin/
 COPY --from=tools /go/bin/protoc-gen-grpc-gateway /usr/local/bin/
 COPY --from=tools /go/bin/protoc-gen-swagger /usr/local/bin/
 
