@@ -1,4 +1,4 @@
-FROM golang:1.14-stretch as easyjson-builder
+FROM golang:1.15-buster as easyjson-builder
 
 ARG GOBIN=/go/bin
 ARG REPO=github.com/mailru/easyjson
@@ -6,10 +6,12 @@ ARG DIR=${GOPATH}/src/${REPO}
 
 RUN apt-get update -y && \
     mkdir -p ${DIR} && \
-    git clone -b v0.7.1 https://${REPO} ${DIR} && \
+    git clone -b v0.7.6 https://${REPO} ${DIR} && \
+    cd ${DIR} && \
+    go mod download && \
     go install ${REPO}/easyjson
 
-FROM golang:1.14-stretch
+FROM golang:1.15-buster
 
 COPY --from=easyjson-builder go/bin/easyjson /usr/local/bin/easyjson
 

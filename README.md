@@ -129,11 +129,28 @@ avro:
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
 	-v "${GOPATH}/pkg:/go/pkg" \
-	-e "GOPRIVATE=" \
+	-e "GOPRIVATE=${GOPRIVATE}" \
 	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
 	dialogs/go-tools-avro:latest \
 	sh -c '\
 	rm -fv ${$@_target}/*.go && \
 	gogen-avro --package=schemas ${$@_target} ${$@_target}/*.avsc'
+```
+
+## graphql
+
+```makefile
+.PHONY: graphql
+graphql:
+	docker run -it --rm \
+	-v "$(shell pwd):/go/src/${PROJECT}" \
+	-v "${GOPATH}/pkg:/go/pkg" \
+	-w "/go/src/${PROJECT}" \
+	-e "GOPRIVATE=${GOPRIVATE}" \
+	dialogs/go-tools-graphql:latest \
+	sh -c '\
+	rm -frv ${$@_target}/generated && \
+	rm -frv ${$@_target}/model && \
+	gqlgen generate --verbose --config=./gqlgen.yml'
 ```

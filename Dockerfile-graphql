@@ -1,0 +1,22 @@
+FROM golang:1.15-buster as graphql-builder
+
+ARG GOBIN=/go/bin
+ARG REPO=github.com/99designs/gqlgen
+ARG DIR=${GOPATH}/src/${REPO}
+
+RUN apt-get update -y && \
+    mkdir -p ${DIR} && \
+    git clone -b v0.13.0 https://${REPO} ${DIR} && \
+    cd ${DIR} && \
+    go mod download && \
+    go install ./...
+
+FROM golang:1.15-buster
+
+ARG REPO=github.com/99designs/gqlgen
+
+COPY --from=graphql-builder go/bin/gqlgen /usr/local/bin/gqlgen
+COPY --from=graphql-builder go/src/${REPO}/plugin /go/src/${REPO}/plugin
+COPY --from=graphql-builder go/src/${REPO}/codegen /go/src/${REPO}/codegen
+
+CMD exit 1

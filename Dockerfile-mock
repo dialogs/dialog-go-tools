@@ -1,9 +1,9 @@
-FROM golang:1.14-stretch as mockery-builder
+FROM golang:1.15-buster as mockery-builder
 
 RUN go get gopkg.in/yaml.v3 && \
     go get -u -v github.com/vektra/mockery/.../
 
-FROM golang:1.14-stretch
+FROM golang:1.15-buster
 
 COPY --from=mockery-builder go/bin/mockery /usr/local/bin/mockery
 
