@@ -1,13 +1,11 @@
-FROM golang:1.15-buster as embedded-builder
+FROM golang:1.16-stretch as embedded-builder
 
 ENV GOBIN=/go/bin
 
 RUN go get -u -v github.com/mjibson/esc
-RUN go get -u -v github.com/go-bindata/go-bindata/... && \
-    cd ${GOPATH}/src/github.com/go-bindata/go-bindata && \
-    make
+RUN go get -u github.com/go-bindata/go-bindata/v3/...
 
-FROM golang:1.15-buster
+FROM golang:1.16-stretch
 
 COPY --from=embedded-builder go/bin/esc /usr/local/bin/esc
 COPY --from=embedded-builder go/bin/go-bindata /usr/local/bin/go-bindata

@@ -1,23 +1,22 @@
 FROm debian:stretch as kafka-builder
 
 RUN apt-get update -y
-RUN apt-get install -y git make g++ zlib1g-dev libssl-dev libsasl2-dev libzstd-dev
+RUN apt-get install -y git make g++ zlib1g-dev libssl-dev libsasl2-dev libzstd-dev python3
 
 WORKDIR /librdkafka
 
-RUN git clone -b v1.5.2 https://github.com/edenhill/librdkafka .
+RUN git clone -b v1.6.1 https://github.com/edenhill/librdkafka .
 
 RUN ./configure
 RUN make
 RUN make install
 
-FROM golang:1.15-buster as linter-builder
+FROM golang:1.16-stretch as linter-builder
 
 RUN GOPATH=$(mktemp -d) cd $(mktemp -d); \
-    go mod init tempmod; \
-    go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.33.0
+    go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.36.0
 
-FROM golang:1.15-buster
+FROM golang:1.16-stretch
 
 COPY --from=linter-builder go/bin/golangci-lint /usr/local/bin/golangci-lint
 

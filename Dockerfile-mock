@@ -1,10 +1,13 @@
-FROM golang:1.15-buster as mockery-builder
+FROM golang:1.16-stretch as mockery-builder
 
 RUN go get gopkg.in/yaml.v3 && \
     go get -u -v github.com/vektra/mockery/.../
 
-FROM golang:1.15-buster
+RUN go install github.com/golang/mock/mockgen@v1.5.0
+
+FROM golang:1.16-stretch
 
 COPY --from=mockery-builder go/bin/mockery /usr/local/bin/mockery
+COPY --from=mockery-builder go/bin/mockgen /usr/local/bin/mockgen
 
 CMD exit 1

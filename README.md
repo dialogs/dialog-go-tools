@@ -15,6 +15,7 @@ Required variables:
 
 ```makefile
 PROJECT:=$(subst ${GOPATH}/src/,,$(shell pwd))
+GOPRIVATE?=
 ```
 
 Use examples:
@@ -24,40 +25,45 @@ Use examples:
 ```makefile
 .PHONY: proto
 proto:
-	$(eval $@_source := service/test)
-	$(eval $@_target := service/test)
-
-	rm -f ${$@_target}/*.pb.go
-
+	target=api/golang && \
+	rm -rf $$target && \
+	rm -f api/api.swagger.json && \
+	mkdir -p $$target && \
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
 	-v "${GOPATH}/pkg:/go/pkg" \
-	-e "GOPRIVATE=" \
+	-e "GOPRIVATE=${GOPRIVATE}" \
 	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
+	--user $(shell id -u):$(shell id -g) \
 	dialogs/go-tools-protoc:latest \
 	protoc \
 	-I=${$@_source} \
 	-I=vendor \
-	--gogofaster_out=plugins=grpc,\
+	--grpc-gateway_out=logtostderr=true:$$target \
+	--openapiv2_out=allow_merge=true,merge_file_name=api:api \
+	--go_out=plugins=grpc,\
 	Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
-	:${$@_target} \
-	${$@_source}/*.proto
+	:$$target api/proto/*/*.proto
 ```
 
 ## linter
 
 ```makefile
-.PHONY: linter
-linter:
+.PHONY: lint
+lint:
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
 	-v "${GOPATH}/pkg:/go/pkg" \
-	-e "GOPRIVATE=" \
+	-e "GOPRIVATE=${GOPRIVATE}" \
 	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
+	--user $(shell id -u):$(shell id -g) \
 	dialogs/go-tools-linter:latest \
-	golangci-lint run ./... --exclude "is deprecated"
+	golangci-lint run ./... \
+	--config .golangci.yml \
+	--color always \
+	--verbose
 ```
 
 ## embedded
@@ -70,7 +76,7 @@ embedded:
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
 	-v "${GOPATH}/pkg:/go/pkg" \
-	-e "GOPRIVATE=" \
+	-e "GOPRIVATE=${GOPRIVATE}" \
 	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
 	dialogs/go-tools-embedded:latest \
@@ -90,7 +96,7 @@ mock:
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
 	-v "${GOPATH}/pkg:/go/pkg" \
-	-e "GOPRIVATE=" \
+	-e "GOPRIVATE=${GOPRIVATE}" \
 	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
 	dialogs/go-tools-mock:latest \
@@ -110,7 +116,7 @@ easyjson:
 	docker run -it --rm \
 	-v "$(shell pwd):/go/src/${PROJECT}" \
 	-v "${GOPATH}/pkg:/go/pkg" \
-	-e "GOPRIVATE=" \
+	-e "GOPRIVATE=${GOPRIVATE}" \
 	-e "GOFLAGS=" \
 	-w "/go/src/${PROJECT}" \
 	dialogs/go-tools-easyjson:latest \
