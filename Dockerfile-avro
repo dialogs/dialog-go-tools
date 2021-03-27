@@ -1,15 +1,11 @@
-FROM golang:1.15-buster as avro-builder
+FROM golang:1.16-stretch as avro-builder
 
 ARG GOBIN=/go/bin
-ARG REPO=github.com/actgardner/gogen-avro
-ARG DIR=${GOPATH}/src/${REPO}
 
 RUN apt-get update -y && \
-    mkdir -p ${DIR} && \
-    git clone -b v7.2.0 https://${REPO} ${DIR} && \
-    go install ${REPO}/v7/cmd/...
+    go get github.com/actgardner/gogen-avro/v7/cmd/...
 
-FROM golang:1.15-buster
+FROM golang:1.16-stretch
 
 COPY --from=avro-builder go/bin/gogen-avro /usr/local/bin/gogen-avro
 

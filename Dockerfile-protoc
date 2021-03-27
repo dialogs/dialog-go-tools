@@ -8,7 +8,7 @@ RUN apt-get update -y
 # https://github.com/protocolbuffers/protobuf/tree/master/src
 RUN apt-get install -y autoconf automake libtool curl make g++ unzip git
 
-RUN git clone -b v3.14.0 https://github.com/protocolbuffers/protobuf.git $DIR
+RUN git clone -b v3.15.5 https://github.com/protocolbuffers/protobuf.git $DIR
 
 WORKDIR $DIR
 
@@ -20,7 +20,7 @@ RUN make
 RUN make check
 RUN make install
 
-FROM golang:1.15-buster as tools
+FROM golang:1.16-buster as tools
 
 ARG PROJECT_TWIRPY=github.com/khevse/twirpy
 ARG PROJECT_TWIRP=github.com/twitchtv/twirp
@@ -30,23 +30,24 @@ ARG PROJECT_GRPCECO=github.com/grpc-ecosystem/grpc-gateway
 ENV GOBIN=/go/bin
 
 RUN git clone -b v1.4.3 https://${PROJECT_PROTOGO} ${GOPATH}/src/${PROJECT_PROTOGO} && \
-        (cd ${GOPATH}/src/${PROJECT_PROTOGO}/protoc-gen-go; go install -v) && \
-    git clone -b v1.16.0 https://${PROJECT_GRPCECO} ${GOPATH}/src/${PROJECT_GRPCECO} && \
+        (cd ${GOPATH}/src/${PROJECT_PROTOGO}/protoc-gen-go; go install -v)
+
+RUN git clone -b v2.3.0 https://${PROJECT_GRPCECO} ${GOPATH}/src/${PROJECT_GRPCECO} && \
         (cd ${GOPATH}/src/${PROJECT_GRPCECO}/protoc-gen-grpc-gateway; go install -v) && \
-        (cd ${GOPATH}/src/${PROJECT_GRPCECO}/protoc-gen-swagger; go install -v)
+        (cd ${GOPATH}/src/${PROJECT_GRPCECO}/protoc-gen-openapiv2; go install -v)
 
 # in official twirp tools for python:
 # - client don't support custom headers: https://github.com/twitchtv/twirp/issues/185
 # - don't have server generation: https://github.com/twitchtv/twirp/issues/220
-RUN git clone -b v7.1.0 https://${PROJECT_TWIRP} ${GOPATH}/src/${PROJECT_TWIRP} && \
-        (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp; go install -v) && \
-        (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp_python; go install -v)
+RUN git clone -b v7.1.1 https://${PROJECT_TWIRP} ${GOPATH}/src/${PROJECT_TWIRP} && \
+        (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp; GO111MODULE=off go install -v) && \
+        (cd ${GOPATH}/src/${PROJECT_TWIRP}/protoc-gen-twirp_python; GO111MODULE=off go install -v)
 
 # custom twirp tools for python
 RUN git clone -b master https://${PROJECT_TWIRPY} ${GOPATH}/src/${PROJECT_TWIRPY} && \
         (cd ${GOPATH}/src/${PROJECT_TWIRPY}/protoc-gen-twirpy; go install -v)
 
-FROM golang:1.15-buster
+FROM golang:1.16-buster
 
 COPY --from=protoc /usr/local/include/google /usr/local/include/google
 COPY --from=protoc /usr/local/bin/protoc /usr/local/bin/protoc
@@ -57,7 +58,7 @@ COPY --from=tools /go/bin/protoc-gen-twirp /usr/local/bin/
 COPY --from=tools /go/bin/protoc-gen-twirp_python /usr/local/bin/
 COPY --from=tools /go/bin/protoc-gen-twirpy /usr/local/bin/
 COPY --from=tools /go/bin/protoc-gen-grpc-gateway /usr/local/bin/
-COPY --from=tools /go/bin/protoc-gen-swagger /usr/local/bin/
+COPY --from=tools /go/bin/protoc-gen-openapiv2 /usr/local/bin/
 
 # source:
 # https://github.com/gogo/protobuf#more-speed-and-more-generated-code
@@ -67,7 +68,7 @@ ARG PROJECT_GOOGLE_API=github.com/googleapis/googleapis
 
 # refresh shared library cache.
 RUN ldconfig && \
-    git clone -b v1.3.1 https://${PROJECT_PROTOGOGO} ${GOPATH}/src/${PROJECT_PROTOGOGO} && \
+    git clone -b v1.3.2 https://${PROJECT_PROTOGOGO} ${GOPATH}/src/${PROJECT_PROTOGOGO} && \
         (cd ${GOPATH}/src/${PROJECT_PROTOGOGO}; make install) && \
     git clone -b v1.4.3 https://${PROJECT_PROTOGO} ${GOPATH}/src/${PROJECT_PROTOGO} && \
         (cd ${GOPATH}/src/${PROJECT_PROTOGO}/protoc-gen-go; go install -v) && \
