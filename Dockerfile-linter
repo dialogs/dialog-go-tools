@@ -14,7 +14,7 @@ RUN make install
 FROM golang:1.16-stretch as linter-builder
 
 RUN GOPATH=$(mktemp -d) cd $(mktemp -d); \
-    go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.36.0
+    go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.40.1
 
 FROM golang:1.16-stretch
 
